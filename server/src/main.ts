@@ -8,7 +8,8 @@ async function bootstrap() {
 
   app.setViewEngine('ejs');
   app.setBaseViewsDir([join(process.cwd(), 'views')]);
+  app.enableCors();
 
-  await app.listen(3000);
+  await app.listen(4000);
 }
 bootstrap();
