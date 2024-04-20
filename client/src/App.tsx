@@ -1,17 +1,64 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TodoType } from "./types";
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
+import { io, Socket } from "socket.io-client";
+import { SERVER_HOST } from "./config";
+
+// emit to server
+// có 2 cách để cập nhật data tại các client
+// cách 1: gửi thông báo update list tới tất cả các máy đang kết nối và thực hiện fetch lại data
+// tuy nhiên sử dụng cách một với những dữ liệu cực lớn, nếu phải fetch toàn bộ data lại chỉ vì thêm 1 dòng dữ liệu là không cần thiết
+// cách 2: gửi thông báo thứ vừa thay đổi cho các client kết nối khác, trừ máy gốc sau đó thực hiện thay đổi duy nhất dòng đó.
+// Bài này dùng tới cách 2 vì training nên sử dụng cách 2 để sử dụng thành thạo hơn
 
 function App() {
   // const
   const [todoList, setTodoList] = useState<TodoType[]>([]); // list to do from server
   const client = new ApolloClient({
-    uri: "http://localhost:4000/graphql",
+    uri: `${SERVER_HOST}/graphql`,
     cache: new InMemoryCache(),
   });
 
+  const socket = useRef<Socket>();
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+
+  useEffect(() => {
+    // do socket này chỉ chạy 1 vòng đầu khi khởi chạy app, dẫn đến lưu giá trị todoList là mảng ban đầu được khởi tạo là []
+    socket.current = io(SERVER_HOST); //connect socket
+    // sự kiện thêm
+    socket.current.on("add-todo", (todo: TodoType) => {
+      // lắng nghe sự khiện add-todo trả về từ server
+      setTodoList((pre) => {
+        // setTodoList sử dụng pre để lấy được giá trị hiện tại của todoList chính xác ngay thời điểm hành động
+        return [...pre, todo];
+      });
+    });
+    // sự kiện xóa
+    socket.current.on("delete-todo", (_id: string) => {
+      setTodoList((pre) => {
+        return pre.filter((f) => f._id !== _id);
+      });
+    });
+
+    // sự kiện xóa
+    socket.current.on("update-status-todo", ({ _id, status }) => {
+      setTodoList((pre) => {
+        return pre.map((item) => {
+          return item._id === _id
+            ? {
+                ...item,
+                status: status,
+              }
+            : item;
+        });
+      });
+    });
+
+    return () => {
+      socket.current?.close();
+    };
+  }, []);
 
   // effect data
   useEffect(() => {
@@ -53,14 +100,20 @@ function App() {
         .mutate({
           mutation: gql`
             mutation {
-              createTodo(name: "${name}", description: "${description}")
+              createTodo(name: "${name}", description: "${description}") {
+                _id
+                name
+                description
+                status
+              }
             }
           `,
         })
-        .then(() => {
-          fetchData();
+        .then((res) => {
+          // fetchData(); Thay thế fetch Data bằng lắng nghe socket và update
           setName("");
           setDescription("");
+          socket.current?.emit("add-todo", res.data.createTodo);
         });
     } catch (error) {
       console.log(error);
@@ -79,7 +132,8 @@ function App() {
           `,
           })
           .then(() => {
-            fetchData();
+            // fetchData();
+            socket.current?.emit("delete-todo", _id);
           });
       } catch (error) {
         console.log(error);
@@ -90,16 +144,21 @@ function App() {
   // update state todo
   const handleChangeStatus = (_id: string, action: boolean) => {
     try {
+      const status: string = action ? "DONE" : "NEW";
       client
         .mutate({
           mutation: gql`
               mutation {
-                changeStatus(_id: "${_id}", status:"${action ? "DONE" : "NEW"}")
+                changeStatus(_id: "${_id}", status:"${status}"){
+                  _id
+                  status
+                }
               }
             `,
         })
         .then(() => {
-          fetchData();
+          // fetchData();
+          socket.current?.emit("update-status-todo", { _id, status });
         });
     } catch (error) {
       console.log(error);
