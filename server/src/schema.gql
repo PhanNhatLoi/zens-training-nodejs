@@ -3,10 +3,10 @@
 # ------------------------------------------------------
 
 type Mutation {
-  changeStatus(_id: String, status: String!): String!
-  createTodo(description: String, name: String!): String!
+  changeStatus(_id: String, status: String!): Todo!
+  createTodo(description: String, name: String!): Todo!
   delete(_id: String): String!
-  updateTodo(_id: String, description: String, name: String!): String!
+  updateTodo(_id: String, description: String, name: String!): Todo!
 }
 
 type Query {

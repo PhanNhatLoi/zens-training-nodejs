@@ -8,6 +8,7 @@ import { TodoController } from './todo/controllers/todo.controller';
 import { TodoService } from './todo/todo.service';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { AppGateway } from './app/app.gateway';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     }),
   ],
   controllers: [AppController, TodoController],
-  providers: [AppService, TodoService],
+  providers: [AppService, TodoService, AppGateway],
 })
 export class AppModule {}

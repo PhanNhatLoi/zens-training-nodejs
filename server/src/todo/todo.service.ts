@@ -60,6 +60,7 @@ export class TodoService {
     this.todoWorks[index] = UpdateBody;
     return {
       message: 'Update work success',
+      work: UpdateBody,
     };
   }
   changeStatus(_id, status) {
@@ -79,6 +80,7 @@ export class TodoService {
     this.todoWorks[index].status = status;
     return {
       message: 'Update state work success',
+      work: this.todoWorks[index],
     };
   }
 
