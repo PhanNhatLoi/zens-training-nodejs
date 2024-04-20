@@ -179,9 +179,9 @@ describe('TodoController', () => {
         description: 'description',
       };
       const res = await controller.create(newTodo);
-      expect(controller.update({ id: res.work._id }, res.work)).toEqual({
-        message: 'Update work success',
-      });
+      expect(controller.update({ id: res.work._id }, res.work).message).toEqual(
+        'Update work success',
+      );
     });
 
     it('should error update work with wrong id', async () => {
@@ -214,10 +214,9 @@ describe('TodoController', () => {
       };
       const res = await controller.create(newTodo);
       expect(
-        controller.changeStatus({ id: res.work._id, status: 'IN_PROGRESS' }),
-      ).toEqual({
-        message: 'Update state work success',
-      });
+        controller.changeStatus({ id: res.work._id, status: 'IN_PROGRESS' })
+          .message,
+      ).toEqual('Update state work success');
     });
 
     it('update status success', async () => {
@@ -227,10 +226,9 @@ describe('TodoController', () => {
       };
       const res = await controller.create(newTodo);
       expect(
-        controller.changeStatus({ id: res.work._id, status: 'IN_PROGRESS' }),
-      ).toEqual({
-        message: 'Update state work success',
-      });
+        controller.changeStatus({ id: res.work._id, status: 'IN_PROGRESS' })
+          .message,
+      ).toEqual('Update state work success');
     });
 
     it('update status with status wrong', async () => {

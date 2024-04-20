@@ -19,42 +19,42 @@ export class TodoResolver {
     return this.todoService.detail(_id);
   }
 
-  @Mutation(() => String)
+  @Mutation(() => Todo)
   async createTodo(
     @Args('name', { type: () => String }) name: string,
     @Args('description', { type: () => String, nullable: true })
     description?: string,
-  ): Promise<string> {
+  ): Promise<Todo> {
     const res = await this.todoService.create({
-      name,
+      name: name,
       description: description,
     });
-    return res.message;
+    return res.work;
   }
 
-  @Mutation(() => String)
+  @Mutation(() => Todo)
   async updateTodo(
     @Args('name', { type: () => String }) name: string,
     @Args('description', { type: () => String, nullable: true })
     description?: string,
     @Args('_id', { type: () => String, nullable: true })
     _id?: string,
-  ): Promise<string> {
+  ): Promise<Todo> {
     const res = await this.todoService.update({
       _id,
       name,
       description,
     });
-    return res.message;
+    return res.work;
   }
 
-  @Mutation(() => String)
+  @Mutation(() => Todo)
   async changeStatus(
     @Args('_id', { type: () => String, nullable: true }) _id: string,
     @Args('status', { type: () => String }) status: StatusType,
-  ): Promise<string> {
+  ): Promise<Todo> {
     const res = await this.todoService.changeStatus(_id, status);
-    return res.message;
+    return res.work;
   }
 
   @Mutation(() => String)
